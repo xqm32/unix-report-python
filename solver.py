@@ -1,4 +1,5 @@
 from random import choice
+from typing import Self
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -39,19 +40,19 @@ class Solution:
         )
         return z
 
-    def find_sort(self, bps: list[float], pre=1e-4) -> float:
-        bps = sorted(bps)
+    def find_sort(self, pre=1e-4) -> float:
+        bps: list[float] = sorted([bp - pre for bp in self.bps])
         for i, j in zip(bps[:-1], bps[1:]):
             if self.fp(i) * self.fp(j) < 0:
-                z = self.fp_zero(i)
+                z = self.fp_zero(j)
                 if abs(self.fp(z)) < pre:
                     return z
                 else:
                     return i
         return bps[-1]
 
-    def find_a3(self, bps: list[float]):
-        x: list[float] = bps.copy()
+    def find_a3(self, pre=1e-4) -> float:
+        x: list[float] = [bp - pre for bp in self.bps]
         k: int = 0
         xk: float = x[k]
         gk: float = self.fp(xk)
@@ -65,25 +66,26 @@ class Solution:
             if gk < 0:
                 gk = gk + abs(b[k])
                 if gk >= 0:
-                    print("gk >= 0")
+                    # print("gk >= 0")
                     break
                 else:
                     U = G - {k}
             else:
                 U = L
             if len(U) == 0:
-                print("len(U) == 0")
+                # print("len(U) == 0")
                 xk = xk - gk / a
                 break
         return xk
 
-    def plt(self, f: bool = True, fp: bool = True, pre=1e-4):
+    def plt(self, f: bool = True, fp: bool = True, pre=1e-4) -> Self:
         F_XS_COLOR = "#C76DA2"
         F_BPS_COLOR = "#8983BF"
         FP_XS_COLOR = "#05B9E2"
         FP_BPS_COLOR = "#32B897"
         FP_ZERO_COLOR = "#BB9727"
-        FP_ANS_COLOR = "#F27970"
+        FP_SORT_COLOR = "#F27970"
+        FP_A3_COLOR = "#B883D4"
 
         xs = np.linspace(min(self.bps) - 1, max(self.bps) + 1, 10000)
         bps = [bp - pre for bp in self.bps]
@@ -114,10 +116,14 @@ class Solution:
                 z = self.fp_zero(bp)
                 plt.plot(z, 0, "o", color=FP_ZERO_COLOR, markersize=3)
 
-        z = self.find_a3(bps)
-        plt.plot(z, self.fp(z), "o", color=FP_ANS_COLOR, markersize=3)
+        z_sort = self.find_sort(pre=pre)
+        plt.plot(z_sort, self.fp(z_sort), "o", color=FP_SORT_COLOR, markersize=3)
+        z_a3 = self.find_a3(pre=pre)
+        plt.plot(z_a3, self.fp(z_a3), "o", color=FP_A3_COLOR, markersize=3)
+        print(z_sort - z_a3)
 
         plt.show()
+        return self
 
 
 # m = 3
@@ -130,4 +136,7 @@ a = abs(np.random.normal(0, 1))
 d = np.random.normal(0, 1)
 b = list(np.random.normal(0, 1, m))
 c = list(np.random.normal(0, 1, m))
+with open("madbc.py", "w") as f:
+    f.write(f"m = {m}\na = {a}\nd = {d}\nb = {b}\nc = {c}\n")
+# from adbc import m, a, d, b, c
 Solution(a, b, c, d).plt(f=False)
