@@ -152,4 +152,4 @@ with open("madbc.py", "w") as f:
 # from madbc import p, m, a, d, b, c
 
 sol = Solution(p, a, b, c, d)
-print(sol.find_a3() - sol.find_sort())
+sol.plt(False)
