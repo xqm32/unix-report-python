@@ -7,11 +7,13 @@ import numpy as np
 class Solution:
     def __init__(
         self,
+        p: float,
         a: float,
         b: list[float],
         c: list[float],
         d: float,
     ) -> None:
+        self.p = p
         self.a: float = a
         self.b: list[float] = b.copy()
         self.c: list[float] = c.copy()
@@ -40,19 +42,27 @@ class Solution:
         )
         return z
 
-    def find_sort(self, pre=1e-4) -> float:
-        bps: list[float] = sorted([bp - pre for bp in self.bps])
-        for i, j in zip(bps[:-1], bps[1:]):
-            if self.fp(i) * self.fp(j) < 0:
-                z = self.fp_zero(j)
-                if abs(self.fp(z)) < pre:
-                    return z
-                else:
-                    return i
-        return bps[-1]
+    def find_sort(self) -> float:
+        bps: list[float] = sorted([bp - self.p for bp in self.bps])
+        start, end = 0, len(bps) - 1
 
-    def find_a3(self, pre=1e-4) -> float:
-        x: list[float] = [bp - pre for bp in self.bps]
+        while True:
+            mid = (start + end) // 2
+            if self.fp(bps[start]) * self.fp(bps[mid]) < 0:
+                if mid - start == 1:
+                    z = bps[start] - self.fp(bps[start]) / a
+                    if abs(self.fp(z)) < self.p:
+                        return z
+                    else:
+                        return bps[start]
+                end = mid
+            else:
+                if end - mid == 1:
+                    return bps[mid]
+                start = mid
+
+    def find_a3(self) -> float:
+        x: list[float] = [bp - self.p for bp in self.bps]
         k: int = 0
         xk: float = x[k]
         gk: float = self.fp(xk)
@@ -78,7 +88,7 @@ class Solution:
                 break
         return xk
 
-    def plt(self, f: bool = True, fp: bool = True, pre=1e-4) -> Self:
+    def plt(self, f: bool = True, fp: bool = True) -> Self:
         F_XS_COLOR = "#C76DA2"
         F_BPS_COLOR = "#8983BF"
         FP_XS_COLOR = "#05B9E2"
@@ -88,7 +98,7 @@ class Solution:
         FP_A3_COLOR = "#B883D4"
 
         xs = np.linspace(min(self.bps) - 1, max(self.bps) + 1, 10000)
-        bps = [bp - pre for bp in self.bps]
+        bps = [bp - self.p for bp in self.bps]
 
         # axis X
         plt.xlabel("x")
@@ -116,9 +126,9 @@ class Solution:
                 z = self.fp_zero(bp)
                 plt.plot(z, 0, "o", color=FP_ZERO_COLOR, markersize=3)
 
-        z_sort = self.find_sort(pre=pre)
+        z_sort = self.find_sort()
         plt.plot(z_sort, self.fp(z_sort), "o", color=FP_SORT_COLOR, markersize=3)
-        z_a3 = self.find_a3(pre=pre)
+        z_a3 = self.find_a3()
         plt.plot(z_a3, self.fp(z_a3), "o", color=FP_A3_COLOR, markersize=3)
         print(z_sort - z_a3)
 
@@ -126,6 +136,7 @@ class Solution:
         return self
 
 
+p = 1e-8
 # m = 3
 # a = 1.5
 # d = 1
@@ -137,6 +148,8 @@ d = np.random.normal(0, 1)
 b = list(np.random.normal(0, 1, m))
 c = list(np.random.normal(0, 1, m))
 with open("madbc.py", "w") as f:
-    f.write(f"m = {m}\na = {a}\nd = {d}\nb = {b}\nc = {c}\n")
-# from adbc import m, a, d, b, c
-Solution(a, b, c, d).plt(f=False)
+    f.write(f"p = {p}\nm = {m}\na = {a}\nd = {d}\nb = {b}\nc = {c}\n")
+# from madbc import p, m, a, d, b, c
+
+sol = Solution(p, a, b, c, d)
+print(sol.find_a3() - sol.find_sort())
