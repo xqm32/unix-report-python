@@ -49,17 +49,16 @@ class Solution:
         while True:
             mid = (start + end) // 2
             if self.fp(bps[start]) * self.fp(bps[mid]) < 0:
-                if mid - start == 1:
-                    z = bps[start] - self.fp(bps[start]) / a
-                    if abs(self.fp(z)) < self.p:
-                        return z
-                    else:
-                        return bps[start]
                 end = mid
             else:
-                if end - mid == 1:
-                    return bps[mid]
                 start = mid
+            
+            if end - start == 1:
+                z = bps[end] - self.fp(bps[end]) / a
+                if abs(self.fp(z)) < self.p:
+                    return z
+                else:
+                    return bps[start]
 
     def find_a3(self) -> float:
         x: list[float] = [bp - self.p for bp in self.bps]
